@@ -6,12 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.example.artlet_v1.TableUser.TableUserClass;
-import com.example.artlet_v1.TableGenre.TableGenreClass;
 import com.example.artlet_v1.TableContent.TableContentClass;
+import com.example.artlet_v1.TableGenre.TableGenreClass;
 import com.example.artlet_v1.TableTag.TableTagClass;
-import com.example.artlet_v1.TableUserGenre.*;
-import java.sql.Timestamp;
+import com.example.artlet_v1.TableUser.TableUserClass;
+import com.example.artlet_v1.TableUserGenre.TableUserGenreClass;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     // Logcat tag
@@ -37,13 +36,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_Content = "CREATE TABLE " + TableContentClass.TABLE_Content + " ( " + TableContentClass.CONTENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT , " + TableContentClass.CONTENT_TITLE + " VARCHAR(255), " + TableContentClass.CONTENT_AUTHORID + " INT(11) NOT NULL, " + TableContentClass.CONTENT_GENREID + " INT(11), " + TableContentClass.CONTENT_TYPE + " VARCHAR(255), " + TableContentClass.CONTENT_FILE + " VARCHAR(255), " + TableContentClass.CONTENT_CREATED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP )\n";
 
     //tag tabel create statement
-    private static final String CREATE_TABLE_Tag = "CREATE TABLE " + TableTagClass.TABLE_Tags + " ( " + TableTagClass.TAG_ID + " INTEGER PRIMARY KEY AUTOINCREMENT , " + TableTagClass.TAG_CONTENTID + " INT(11) , " + TableTagClass.TAG_NAME + " VARCHAR(255) NOT NULL, " + TableTagClass.TAG_CREATED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP )";
+    private static final String CREATE_TABLE_Tag = "CREATE TABLE " + TableTagClass.TABLE_Tags + " ( " + TableTagClass.TAG_ID + " INTEGER PRIMARY KEY AUTOINCREMENT , " + TableTagClass.TAG_CONTENTID + " INT(11) , " + TableTagClass.TAG_NAME + " VARCHAR(255) NOT NULL, " + TableTagClass.TAG_CREATED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (" + TableTagClass.TAG_CONTENTID + ") REFERENCES " + TableContentClass.TABLE_Content + " (" + TableContentClass.CONTENT_ID + "))";
 
     //user_genre table create statement
-    private static final String CREATE_TABLE_User_Genre = "CREATE TABLE " + TableUserGenreClass.TABLE_User_Genre + " ( " + TableUserGenreClass.USERGENRE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT , " + TableUserGenreClass.UG_GENREID + " INT(11) REFERENCES " + TableGenreClass.GENRE_ID + ", " + TableUserGenreClass.UG_USERID + " INT(11), " + TableUserGenreClass.UG_CREATED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP )";
+    private static final String CREATE_TABLE_User_Genre = "CREATE TABLE " + TableUserGenreClass.TABLE_User_Genre + " ( " + TableUserGenreClass.USERGENRE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT , " + TableUserGenreClass.UG_GENREID + " INT(11), " + TableUserGenreClass.UG_USERID + " INT(11), " + TableUserGenreClass.UG_CREATED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (" + TableUserGenreClass.UG_USERID + ") REFERENCES "+ TableUserClass.TABLE_Users + " (" + TableUserClass.USER_ID + "), FOREIGN KEY (" + TableUserGenreClass.UG_GENREID + ") REFERENCES " + TableGenreClass.TABLE_Genre + " (" + TableGenreClass.GENRE_ID + ") )";
 
     // SQLiteDatabase object to write and read the database created
-    private SQLiteDatabase db;
+    protected SQLiteDatabase db;
 
     public  DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
@@ -62,6 +61,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.d("Tables Created", "Inside OnCreate");
     }
 
+    @Override
+    public void onConfigure(SQLiteDatabase db){
+        db.setForeignKeyConstraintsEnabled(true);
+    }
+
     public void InsertUserData(DatabaseHelper dh,  String user_name, String user_email, String user_password, String user_location)
     {
         db = getWritableDatabase();
@@ -72,6 +76,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         c.put(TableUserClass.USER_LOCATION, user_location);
         db.insert(TableUserClass.TABLE_Users, null, c);
         Log.d("Inside InsertUSerData", "One row inserted");
+    }
+
+    //will be removed later; may be used
+    public void InsertGenreData()
+    {
+        db = getWritableDatabase();
+        String insertValues = " INSERT INTO " + TableGenreClass.TABLE_Genre + " ( '" + TableGenreClass.GENRE_NAME + "' ) VALUES ('Narrative'), ('Drama'), ('Novel'), ('Poetry'), ('Science Fiction'), ('Non-Fiction'), ('Short-Story'), ('Autobiography'), ('Historical Fiction'), ('Horror'), ('Crime'), ('Memoir'), ('Comedy'), ('Satire'), ('Romance'), ('Play'), ('Prose'), ('Suspense'), ('Legend'), ('Thriller'), ('Tragedy'), ('Young Adult Fiction'), ('Myth'), ('Occult Fiction'), ('Screenplay'), ('Children Literature'), ('Alternate History'), ('Magical Realism'), ('Mystery'), ('Anthology'), ('Detective Fiction') ";
+        db.execSQL(insertValues);
     }
 
 
